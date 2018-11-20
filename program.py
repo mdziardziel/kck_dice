@@ -8,7 +8,7 @@ from math import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 
-from skimage import data, color, filters
+from skimage import data, color, filters, feature, morphology
 from skimage.transform import hough_circle, hough_circle_peaks
 from skimage.feature import canny
 from skimage.draw import circle_perimeter
@@ -29,18 +29,20 @@ class Circle(object):
 def count_pips(image):
     # http://scikit-image.org/docs/dev/auto_examples/filters/plot_hysteresis.html#sphx-glr-auto-examples-filters-plot-hysteresis-py
 
-    filtered = filters.sobel(image)
+    edges = filters.sobel(image)
 
-    low = 0.1
+    low = 0.03
     high = 0.35
 
-    lowt = (filtered > low).astype(int)
+    lowt = (edges > low).astype(int)
+    hight = (edges > high).astype(int)
+    hyst = filters.apply_hysteresis_threshold(edges, low, high)
 
-    edges = lowt
+    edges = filters.median(lowt, morphology.disk(10))
 
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_circular_elliptical_hough_transform.html
 
-    hough_radii = np.arange(10, 50, 2)
+    hough_radii = np.arange(20, 40, 5)
     hough_res = hough_circle(edges, hough_radii)
 
     accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii)
@@ -52,7 +54,7 @@ def count_pips(image):
 
     counted = []
     for center_y, center_x, radius, acc in zip(cy, cx, radii, accums):
-        if acc < 0.7:
+        if acc < 0.9:
             break
         for circ in counted:
             if circ.overlap(center_y, center_x, radius):
