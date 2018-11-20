@@ -8,11 +8,6 @@ import os
 on_paper = "IMG_20181118_220206.jpg"
 on_table = "IMG_20181118_220153.jpg"
 
-
-class Dice:
-    def __init__(self, point):
-        self.dotts.append(point)
-
 def show_image(title, image):
     namedWindow(title, WINDOW_NORMAL)
     imshow(title, image)
